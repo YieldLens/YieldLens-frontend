@@ -9,6 +9,7 @@ import { PositionDetailDrawer } from './components/PositionDetailDrawer';
 import { SortControls, SortField, SortOrder } from './components/SortControls';
 import { APYChart } from './components/APYChart';
 import { ProtocolFilter } from './components/ProtocolFilter';
+import { SearchFilter } from './components/SearchFilter';
 import { SkeletonOverview, SkeletonChart, SkeletonPositions } from './components/SkeletonLoaders';
 import { mockPositions, mockHistoricalAPY } from './data/mockData';
 import { ProtocolType, PortfolioSummary, Position } from './types/portfolio';
@@ -20,6 +21,7 @@ export default function App() {
   const [sortField, setSortField] = useState<SortField>('value');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Simulate initial data loading
   useEffect(() => {
@@ -40,13 +42,22 @@ export default function App() {
     };
   }, []);
 
-  // Filter positions by protocol
+  // Filter positions by protocol and search query
   const filteredPositions = useMemo(() => {
-    if (selectedProtocol === 'All') {
-      return mockPositions;
-    }
-    return mockPositions.filter((pos) => pos.protocol === selectedProtocol);
-  }, [selectedProtocol]);
+    const protocolFiltered = selectedProtocol === 'All'
+      ? mockPositions
+      : mockPositions.filter((pos) => pos.protocol === selectedProtocol);
+    
+    if (!searchQuery.trim()) return protocolFiltered;
+    
+    const query = searchQuery.toLowerCase();
+    return protocolFiltered.filter(
+      (pos) =>
+        pos.poolName.toLowerCase().includes(query) ||
+        pos.token0.toLowerCase().includes(query) ||
+        pos.token1.toLowerCase().includes(query)
+    );
+  }, [selectedProtocol, searchQuery]);
 
   // Count positions by protocol
   const protocolCounts = useMemo(() => {
@@ -120,8 +131,13 @@ export default function App() {
                 <>          
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold">Liquidity Positions</h2>
-                <div className="text-sm text-muted-foreground">
-                  {filteredPositions.length} {filteredPositions.length === 1 ? 'position' : 'positions'}
+                <div className="flex items-center gap-4">
+                  <div className="w-64">
+                    <SearchFilter value={searchQuery} onChange={setSearchQuery} />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {filteredPositions.length} {filteredPositions.length === 1 ? 'position' : 'positions'}
+                  </div>
                 </div>
               </div>
 
