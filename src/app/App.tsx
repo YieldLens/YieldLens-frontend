@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { PortfolioOverview } from './components/PortfolioOverview';
 import { PositionCard } from './components/PositionCard';
 import { PositionDetailDrawer } from './components/PositionDetailDrawer';
+import { SortControls, SortField, SortOrder } from './components/SortControls';
 import { APYChart } from './components/APYChart';
 import { ProtocolFilter } from './components/ProtocolFilter';
 import { mockPositions, mockHistoricalAPY } from './data/mockData';
@@ -14,6 +15,8 @@ export default function App() {
   const [selectedProtocol, setSelectedProtocol] = useState<ProtocolType | 'All'>('All');
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('value');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Calculate portfolio summary
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -41,6 +44,26 @@ export default function App() {
       return counts;
     }, {} as Record<string, number>);
   }, []);
+
+  // Sort positions
+  const sortedPositions = useMemo(() => {
+    const sorted = [...filteredPositions];
+    sorted.sort((a, b) => {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+    return sorted;
+  }, [filteredPositions, sortField, sortOrder]);
+
+  const handleSortChange = (field: SortField) => {
+    if (field === sortField) {
+      setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
 
   return (
     <ThemeProvider>
@@ -78,10 +101,19 @@ export default function App() {
                 />
               </div>
 
+              {/* Sort Controls */}
+              <div className="mb-6">
+                <SortControls
+                  sortField={sortField}
+                  sortOrder={sortOrder}
+                  onSortChange={handleSortChange}
+                />
+              </div>
+
               {/* Position Cards Grid */}
-              {filteredPositions.length > 0 ? (
+              {sortedPositions.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPositions.map((position) => (
+                  {sortedPositions.map((position) => (
                     <PositionCard key={position.id} position={position} onSelect={(pos) => { setSelectedPosition(pos); setDrawerOpen(true); }} />
                   ))}
                 </div>
