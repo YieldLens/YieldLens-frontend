@@ -4,13 +4,16 @@ import { WalletProvider } from './contexts/WalletContext';
 import { Header } from './components/Header';
 import { PortfolioOverview } from './components/PortfolioOverview';
 import { PositionCard } from './components/PositionCard';
+import { PositionDetailDrawer } from './components/PositionDetailDrawer';
 import { APYChart } from './components/APYChart';
 import { ProtocolFilter } from './components/ProtocolFilter';
 import { mockPositions, mockHistoricalAPY } from './data/mockData';
-import { ProtocolType, PortfolioSummary } from './types/portfolio';
+import { ProtocolType, PortfolioSummary, Position } from './types/portfolio';
 
 export default function App() {
   const [selectedProtocol, setSelectedProtocol] = useState<ProtocolType | 'All'>('All');
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Calculate portfolio summary
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -79,7 +82,7 @@ export default function App() {
               {filteredPositions.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredPositions.map((position) => (
-                    <PositionCard key={position.id} position={position} />
+                    <PositionCard key={position.id} position={position} onSelect={(pos) => { setSelectedPosition(pos); setDrawerOpen(true); }} />
                   ))}
                 </div>
               ) : (
@@ -102,6 +105,11 @@ export default function App() {
             </section>
           </main>
         </div>
+        <PositionDetailDrawer
+          position={selectedPosition}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
       </WalletProvider>
     </ThemeProvider>
   );

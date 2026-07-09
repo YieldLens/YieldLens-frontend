@@ -5,9 +5,10 @@ import { Position } from '../types/portfolio';
 
 interface PositionCardProps {
   position: Position;
+  onSelect?: (position: Position) => void;
 }
 
-export function PositionCard({ position }: PositionCardProps) {
+export function PositionCard({ position, onSelect }: PositionCardProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -41,7 +42,7 @@ export function PositionCard({ position }: PositionCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onSelect?.(position)}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
