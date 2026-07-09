@@ -1,9 +1,24 @@
+import { useState } from 'react';
 import { Button } from './ui/button';
-import { Wallet, Sun, Moon } from 'lucide-react';
+import { Wallet, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useWallet } from '../contexts/WalletContext';
+import { WalletModal } from './WalletModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
+  const { wallet, disconnect } = useWallet();
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+
+  const truncateAddress = (addr: string) => {
+    return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
+  };
 
   return (
     <header className="border-b bg-background sticky top-0 z-50">
@@ -24,12 +39,37 @@ export function Header() {
           >
             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </Button>
-          <Button className="gap-2">
-            <Wallet className="w-4 h-4" />
-            Connect Wallet
-          </Button>
+
+          {wallet.isConnected ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-[10px]">YL</span>
+                  </div>
+                  {truncateAddress(wallet.address!)}
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setWalletModalOpen(true)}>
+                  Wallet Details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={disconnect} className="text-destructive">
+                  Disconnect
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="gap-2" onClick={() => setWalletModalOpen(true)}>
+              <Wallet className="w-4 h-4" />
+              Connect Wallet
+            </Button>
+          )}
         </div>
       </div>
+
+      <WalletModal open={walletModalOpen} onOpenChange={setWalletModalOpen} />
     </header>
   );
 }
