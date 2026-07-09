@@ -3,6 +3,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { Header } from './components/Header';
 import { PortfolioOverview } from './components/PortfolioOverview';
+import { PortfolioAllocation } from './components/PortfolioAllocation';
 import { PositionCard } from './components/PositionCard';
 import { PositionDetailDrawer } from './components/PositionDetailDrawer';
 import { SortControls, SortField, SortOrder } from './components/SortControls';
@@ -76,6 +77,9 @@ export default function App() {
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-6">Portfolio Overview</h2>
               <PortfolioOverview summary={portfolioSummary} />
+            </section>
+            <section className="mb-8">
+              <PortfolioAllocation positions={mockPositions} />
             </section>
 
             {/* APY Trends Chart */}
