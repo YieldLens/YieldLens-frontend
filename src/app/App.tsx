@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { Header } from './components/Header';
@@ -9,6 +9,7 @@ import { PositionDetailDrawer } from './components/PositionDetailDrawer';
 import { SortControls, SortField, SortOrder } from './components/SortControls';
 import { APYChart } from './components/APYChart';
 import { ProtocolFilter } from './components/ProtocolFilter';
+import { SkeletonOverview, SkeletonChart, SkeletonPositions } from './components/SkeletonLoaders';
 import { mockPositions, mockHistoricalAPY } from './data/mockData';
 import { ProtocolType, PortfolioSummary, Position } from './types/portfolio';
 
@@ -18,6 +19,15 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('value');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial data loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate portfolio summary
   const portfolioSummary: PortfolioSummary = useMemo(() => {
@@ -76,19 +86,38 @@ export default function App() {
             {/* Portfolio Overview */}
             <section className="mb-8">
               <h2 className="text-3xl font-bold mb-6">Portfolio Overview</h2>
-              <PortfolioOverview summary={portfolioSummary} />
-            </section>
-            <section className="mb-8">
-              <PortfolioAllocation positions={mockPositions} />
+              {isLoading ? (
+                <SkeletonOverview />
+              ) : (
+                <>
+                  <PortfolioOverview summary={portfolioSummary} />
+                  <div className="mt-6">
+                    <PortfolioAllocation positions={mockPositions} />
+                  </div>
+                </>
+              )}
             </section>
 
             {/* APY Trends Chart */}
             <section className="mb-8">
-              <APYChart data={mockHistoricalAPY} />
+              {isLoading ? (
+                <SkeletonChart />
+              ) : (
+                <APYChart data={mockHistoricalAPY} />
+              )}
             </section>
 
             {/* Positions */}
             <section>
+              {isLoading ? (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold">Liquidity Positions</h2>
+                  </div>
+                  <SkeletonPositions />
+                </>
+              ) : (
+                <>          
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold">Liquidity Positions</h2>
                 <div className="text-sm text-muted-foreground">
@@ -125,6 +154,8 @@ export default function App() {
                 <div className="text-center py-12 bg-muted rounded-lg">
                   <p className="text-muted-foreground">No positions found for this protocol</p>
                 </div>
+              )}
+              </>
               )}
             </section>
 
