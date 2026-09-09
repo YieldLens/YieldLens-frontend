@@ -1,15 +1,22 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
+export type WalletType = 'Freighter' | 'xBull' | 'Hana' | 'Albedo';
+export type StellarNetwork = 'testnet' | 'public';
+
 interface WalletState {
   isConnected: boolean;
+  walletType: WalletType | null;
+  network: StellarNetwork;
   address: string | null;
   balance: number;
+  lpPositionsCount: number;
 }
 
 interface WalletContextType {
   wallet: WalletState;
-  connect: () => void;
+  connect: (type?: WalletType) => void;
   disconnect: () => void;
+  switchNetwork: (network: StellarNetwork) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -26,28 +33,44 @@ function generateWalletAddress(): string {
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<WalletState>({
     isConnected: false,
+    walletType: null,
+    network: 'testnet',
     address: null,
     balance: 0,
+    lpPositionsCount: 0,
   });
 
-  const connect = useCallback(() => {
-    setWallet({
+  const connect = useCallback((type: WalletType = 'Freighter') => {
+    setWallet((prev) => ({
+      ...prev,
       isConnected: true,
+      walletType: type,
       address: generateWalletAddress(),
       balance: Math.floor(Math.random() * 50000) / 100,
-    });
+      lpPositionsCount: 3,
+    }));
   }, []);
 
   const disconnect = useCallback(() => {
-    setWallet({
+    setWallet((prev) => ({
+      ...prev,
       isConnected: false,
+      walletType: null,
       address: null,
       balance: 0,
-    });
+      lpPositionsCount: 0,
+    }));
+  }, []);
+
+  const switchNetwork = useCallback((network: StellarNetwork) => {
+    setWallet((prev) => ({
+      ...prev,
+      network,
+    }));
   }, []);
 
   return (
-    <WalletContext.Provider value={{ wallet, connect, disconnect }}>
+    <WalletContext.Provider value={{ wallet, connect, disconnect, switchNetwork }}>
       {children}
     </WalletContext.Provider>
   );
